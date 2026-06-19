@@ -1,1 +1,38 @@
+name: Aktualizuj ceny druku
 
+on:
+  schedule:
+    - cron: '0 5 * * *'  # codziennie o 05:00 UTC (07:00 CET)
+  workflow_dispatch:       # możliwość ręcznego uruchomienia z GitHub UI
+
+jobs:
+  update-prices:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Uruchom scraper cen
+        run: node scraper.js
+
+      - name: Sprawdź czy prices.json się zmienił
+        id: check
+        run: |
+          git diff --quiet prices.json && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commituj zaktualizowane ceny
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add prices.json
+          git commit -m "chore: aktualizacja cen druku $(date +'%Y-%m-%d')"
+          git push
