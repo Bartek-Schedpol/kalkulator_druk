@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator kosztów druku — Schedpol</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #f5f4f0;
+    --surface:  #ffffff;
+    --surface2: #f0ede8;
+    --border:   rgba(0,0,0,0.12);
+    --text:     #1a1a18;
+    --muted:    #6b6a65;
+    --accent:   #1a5fa8;
+    --accent-bg:#e6f1fb;
+    --success:  #1a7a48;
+    --success-bg:#e1f5ee;
+    --warn-bg:  #faeeda;
+    --warn:     #854f0b;
+    --radius:   10px;
+    --radius-lg:14px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:       #1c1b18;
+      --surface:  #252420;
+      --surface2: #2e2c28;
+      --border:   rgba(255,255,255,0.10);
+      --text:     #e8e6df;
+      --muted:    #9a9890;
+      --accent:   #6eaaee;
+      --accent-bg:#0c447c;
+      --success:  #5dcaa5;
+      --success-bg:#085041;
+      --warn-bg:  #412402;
+      --warn:     #fac775;
+    }
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  header h1 { font-size: 17px; font-weight: 600; }
+  header h1 span { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: 8px; }
+
+  #status-badge {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--surface2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  #status-badge.ok  { background: var(--success-bg); color: var(--success); border-color: transparent; }
+  #status-badge.err { background: var(--warn-bg);    color: var(--warn);    border-color: transparent; }
+
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 20px;
+    margin-bottom: 16px;
+  }
+
+  .card h2 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+  @media (max-width: 520px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  select, input[type=number] {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 14px;
+    padding: 8px 10px;
+    width: 100%;
+    outline: none;
+    transition: border-color .15s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+  select:focus, input[type=number]:focus { border-color: var(--accent); }
+
+  .range-wrap { display: flex; align-items: center; gap: 12px; }
+  .range-wrap input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+  .range-wrap input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+  .range-wrap input[type=range]::-moz-range-thumb {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: none;
+  }
+  .range-val { font-size: 14px; font-weight: 600; min-width: 90px; text-align: right; color: var(--text); }
+
+  .discount-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--success-bg);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin-top: 4px;
+  }
+  .discount-row label { font-size: 13px; color: var(--success); flex: 1; font-weight: 500; }
+  .discount-row input { width: 64px; background: var(--surface); }
+  .discount-row span { font-size: 13px; color: var(--success); font-weight: 600; }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .metric {
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+  }
+  .metric.accent {
+    background: var(--accent-bg);
+  }
+  .metric .ml { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .metric.accent .ml { color: var(--accent); }
+  .metric .mv { font-size: 20px; font-weight: 700; }
+  .metric.accent .mv { color: var(--accent); }
+  .metric .ms { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .saving-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--success-bg);
+    color: var(--success);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 6px;
+  }
+
+  .note {
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    line-height: 1.6;
+    margin-top: 4px;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 16px;
+    border-top: 1px solid var(--border);
+    margin-top: 24px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Kalkulator kosztów druku <span>Schedpol</span></h1>
+  <div id="status-badge">Ładowanie cen…</div>
+</header>
+
+<main>
+  <div id="loading" class="loading">Pobieranie aktualnych cen…</div>
+  <div id="app" style="display:none">
+
+    <div class="card">
+      <h2>Parametry materiału</h2>
+      <div class="grid-3" style="margin-bottom:12px">
+        <div class="field">
+          <label>Rodzaj materiału</label>
+          <select id="type">
+            <option value="ulotka">Ulotka</option>
+            <option value="katalog">Katalog / broszura</option>
+            <option value="plakat">Plakat</option>
+            <option value="wizytowka">Wizytówki</option>
+            <option value="teczka">Teczka firmowa</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Format</label>
+          <select id="format">
+            <option value="a6">A6 (105×148 mm)</option>
+            <option value="a5" selected>A5 (148×210 mm)</option>
+            <option value="dl">DL (99×210 mm)</option>
+            <option value="a4">A4 (210×297 mm)</option>
+            <option value="a3">A3 (297×420 mm)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Kolor druku</label>
+          <select id="color">
+            <option value="4_4">CMYK 4+4 (dwustronny)</option>
+            <option value="4_0">CMYK 4+0 (jednostronny)</option>
+            <option value="1_1">1+1 (czarno-biały)</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="field">
+          <label>Gramatura</label>
+          <select id="gram">
+            <option value="90">90 g/m²</option>
+            <option value="115">115 g/m²</option>
+            <option value="130" selected>130 g/m²</option>
+            <option value="150">150 g/m²</option>
+            <option value="170">170 g/m²</option>
+            <option value="200">200 g/m²</option>
+            <option value="250">250 g/m²</option>
+            <option value="300">300 g/m²</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Rodzaj papieru</label>
+          <select id="paper">
+            <option value="blyszcz" selected>Kreda błysk</option>
+            <option value="mat">Kreda mat</option>
+            <option value="offset">Offset (bezdrzewny)</option>
+            <option value="karton">Karton</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Uszlachetnienie</label>
+          <select id="finish">
+            <option value="none" selected>Brak</option>
+            <option value="folia_blyszcz">Folia błysk (1 str.)</option>
+            <option value="folia_mat">Folia mat (1 str.)</option>
+            <option value="folia_soft">Soft-touch (1 str.)</option>
+            <option value="uv_wybiorczy">UV wybiórczy</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Nakład</h2>
+      <div class="range-wrap">
+        <input type="range" id="naklad" min="0" max="17" value="7" step="1">
+        <span class="range-val" id="naklad-out">2 000 szt.</span>
+      </div>
+      <div class="discount-row">
+        <span>🏷</span>
+        <label>Stały rabat Schedpol</label>
+        <input type="number" id="rabat" value="20" min="0" max="99" style="width:64px;text-align:center">
+        <span>%</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Szacunek kosztów</h2>
+      <div class="results-grid">
+        <div class="metric">
+          <div class="ml">Cena rynkowa (netto)</div>
+          <div class="mv" id="r-base">—</div>
+          <div class="ms" id="r-base-range"></div>
+        </div>
+        <div class="metric accent">
+          <div class="ml">Po rabacie (netto)</div>
+          <div class="mv" id="r-disc">—</div>
+          <div class="ms" id="r-disc-range"></div>
+        </div>
+        <div class="metric">
+          <div class="ml">Koszt / 1 000 szt.</div>
+          <div class="mv" id="r-1k">—</div>
+          <div class="ms">po rabacie, netto</div>
+        </div>
+        <div class="metric">
+          <div class="ml">Koszt / sztukę</div>
+          <div class="mv" id="r-unit">—</div>
+          <div class="ms">po rabacie, netto</div>
+        </div>
+        <div class="metric">
+          <div class="ml">Czas realizacji</div>
+          <div class="mv" id="r-time">—</div>
+          <div class="ms">dni robocze</div>
+        </div>
+      </div>
+      <div id="saving-wrap"></div>
+      <div class="note" id="r-note"></div>
+    </div>
+
+  </div>
+</main>
+
+<footer id="footer"></footer>
+
+<script>
+const STEPS = [100,250,500,750,1000,1500,2000,2500,3000,4000,5000,7500,10000,15000,20000,30000,50000,100000];
+let P = null;
+
+async function loadPrices() {
+  try {
+    const res = await fetch('prices.json?v=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    P = await res.json();
+    const d = new Date(P.updated);
+    const ds = d.toLocaleDateString('pl-PL', { day:'2-digit', month:'2-digit', year:'numeric' });
+    document.getElementById('status-badge').textContent = 'Ceny z ' + ds;
+    document.getElementById('status-badge').className = 'ok';
+    document.getElementById('footer').textContent = 'Źródło: ' + P.source + ' | Aktualizacja: ' + ds + ' | Szacunki bez VAT i dostawy';
+    if (P.discount_schedpol) document.getElementById('rabat').value = P.discount_schedpol;
+  } catch(e) {
+    document.getElementById('status-badge').textContent = 'Błąd ładowania cen';
+    document.getElementById('status-badge').className = 'err';
+    console.error('prices.json load error:', e);
+    P = null;
+  }
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('app').style.display = '';
+  calc();
+}
+
+function getScaleMult(n) {
+  if (!P) return 1;
+  for (const s of P.multipliers.scale) if (n <= s.max) return s.mult;
+  return 0.60;
+}
+
+function fmt(v) {
+  return v.toLocaleString('pl-PL', { minimumFractionDigits:0, maximumFractionDigits:0 }) + ' zł';
+}
+
+function calc() {
+  if (!P) return;
+  const type   = document.getElementById('type').value;
+  const format = document.getElementById('format').value;
+  const color  = document.getElementById('color').value;
+  const gram   = document.getElementById('gram').value;
+  const paper  = document.getElementById('paper').value;
+  const finish = document.getElementById('finish').value;
+  const idx    = parseInt(document.getElementById('naklad').value);
+  const n      = STEPS[idx];
+  const rabat  = Math.min(Math.max(parseFloat(document.getElementById('rabat').value) || 0, 0), 99);
+
+  document.getElementById('naklad-out').textContent = n.toLocaleString('pl-PL') + ' szt.';
+
+  const base_u  = P.base[type][format];
+  const cm      = P.multipliers.color[color]  || 1;
+  const gm      = P.multipliers.gram[gram]    || 1;
+  const pm      = P.multipliers.paper[paper]  || 1;
+  const fa      = P.multipliers.finish[finish]|| 0;
+  const sm      = getScaleMult(n);
+  const setup   = P.setup[type] || 100;
+
+  const uprice  = base_u * cm * gm * pm * sm + fa;
+  const baseTotal = uprice * n + setup;
+  const discTotal = baseTotal * (1 - rabat / 100);
+  const saving    = baseTotal - discTotal;
+
+  const blow  = Math.round(baseTotal * 0.88);
+  const bhigh = Math.round(baseTotal * 1.18);
+  const dlow  = Math.round(discTotal * 0.88);
+  const dhigh = Math.round(discTotal * 1.18);
+
+  let days = '3–5';
+  if (n > 20000) days = '5–8';
+  if (n > 50000) days = '7–12';
+  if (finish !== 'none') days = (days === '3–5') ? '4–7' : '6–10';
+
+  document.getElementById('r-base').textContent      = fmt(Math.round(baseTotal));
+  document.getElementById('r-base-range').textContent= fmt(blow) + ' – ' + fmt(bhigh);
+  document.getElementById('r-disc').textContent      = fmt(Math.round(discTotal));
+  document.getElementById('r-disc-range').textContent= fmt(dlow) + ' – ' + fmt(dhigh);
+  document.getElementById('r-1k').textContent        = fmt(Math.round(discTotal / n * 1000));
+  document.getElementById('r-unit').textContent      = (discTotal / n).toFixed(3).replace('.',',') + ' zł';
+  document.getElementById('r-time').textContent      = days;
+
+  const sw = document.getElementById('saving-wrap');
+  if (rabat > 0) {
+    sw.innerHTML = '<div class="saving-badge">✓ Oszczędność z rabatu ' + rabat + '%: ' + fmt(Math.round(saving)) + '</div>';
+  } else {
+    sw.innerHTML = '';
+  }
+
+  let note = '⚠ Szacunki orientacyjne. Setup/przygotowanie do druku (~' + setup + ' zł netto) wliczony. Ceny bez VAT i kosztów dostawy. ';
+  if (n < 500) note += 'Niski nakład — rozważ druk cyfrowy, może być tańszy. ';
+  if (finish === 'uv_wybiorczy') note += 'UV wybiórczy: możliwy dodatkowy koszt matrycy 50–150 zł. ';
+  document.getElementById('r-note').textContent = note;
+}
+
+document.querySelectorAll('select, input').forEach(el => el.addEventListener('input', calc));
+loadPrices();
+</script>
+</body>
+</html>
