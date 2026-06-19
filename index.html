@@ -30,13 +30,11 @@
   header { background:var(--surface); border-bottom:1px solid var(--border); padding:16px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
   header h1 { font-size:17px; font-weight:600; }
   header h1 span { color:var(--muted); font-weight:400; font-size:14px; margin-left:8px; }
-
   #status-badge { font-size:12px; padding:3px 10px; border-radius:20px; background:var(--surface2); color:var(--muted); border:1px solid var(--border); }
   #status-badge.ok  { background:var(--success-bg); color:var(--success); border-color:transparent; }
   #status-badge.err { background:var(--warn-bg); color:var(--warn); border-color:transparent; }
 
   main { max-width:760px; margin:0 auto; padding:24px 16px 48px; }
-
   .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; margin-bottom:16px; }
   .card h2 { font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:14px; }
 
@@ -75,88 +73,187 @@
   .metric .ms { font-size:11px; color:var(--muted); margin-top:2px; }
 
   .saving-badge { display:inline-flex; align-items:center; gap:5px; background:var(--success-bg); color:var(--success); border-radius:20px; padding:3px 10px; font-size:12px; font-weight:600; margin-top:6px; }
-
   .note { font-size:12px; color:var(--muted); background:var(--surface2); border-radius:var(--radius); padding:10px 12px; line-height:1.6; margin-top:8px; }
-
   .loading { text-align:center; padding:40px; color:var(--muted); font-size:14px; }
-
   footer { text-align:center; font-size:12px; color:var(--muted); padding:16px; border-top:1px solid var(--border); margin-top:24px; }
 
-  /* Cover upload */
-  .cover-upload-area {
-    border:2px dashed var(--border); border-radius:var(--radius-lg);
-    padding:24px; text-align:center; cursor:pointer;
-    transition:border-color .2s, background .2s;
-    position:relative;
-  }
+  /* Cover upload — screen only */
+  .cover-upload-area { border:2px dashed var(--border); border-radius:var(--radius-lg); padding:24px; text-align:center; cursor:pointer; transition:border-color .2s,background .2s; position:relative; }
   .cover-upload-area:hover { border-color:var(--accent); background:var(--accent-bg); }
   .cover-upload-area input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
   .cover-upload-area p { font-size:13px; color:var(--muted); margin-top:6px; }
-  .cover-preview { display:none; margin-top:12px; text-align:center; }
-  .cover-preview img { max-height:180px; max-width:100%; border-radius:var(--radius); border:1px solid var(--border); object-fit:contain; }
-  .cover-preview button { margin-top:8px; font-size:12px; color:var(--warn); background:none; border:none; cursor:pointer; text-decoration:underline; }
 
-  /* Export button */
-  .btn-export {
-    display:flex; align-items:center; justify-content:center; gap:8px;
-    width:100%; padding:13px; border-radius:var(--radius-lg);
-    background:var(--accent); color:#fff; font-size:15px; font-weight:600;
-    border:none; cursor:pointer; transition:opacity .15s;
-    margin-top:4px;
-  }
+  .cover-screen-preview { display:none; margin-top:12px; }
+  .cover-screen-preview img { max-height:140px; max-width:220px; border-radius:var(--radius); border:1px solid var(--border); object-fit:contain; }
+  .cover-screen-preview button { margin-top:6px; font-size:12px; color:var(--warn); background:none; border:none; cursor:pointer; text-decoration:underline; display:block; }
+
+  .btn-export { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:13px; border-radius:var(--radius-lg); background:var(--accent); color:#fff; font-size:15px; font-weight:600; border:none; cursor:pointer; transition:opacity .15s; margin-top:4px; }
   .btn-export:hover { opacity:.88; }
-  .btn-export:active { opacity:.75; }
 
-  /* PDF print styles */
+  /* ===================== PDF PRINT ===================== */
   @media print {
-    body { background:#fff !important; color:#000 !important; font-size:12pt; }
-    header, footer, .card h2, .no-print { display:none !important; }
-    main { max-width:100%; padding:0; }
-    .card { border:1px solid #ccc; border-radius:4px; margin-bottom:12px; page-break-inside:avoid; }
-    .metric { background:#f5f5f5 !important; }
-    .metric.accent { background:#e6f1fb !important; }
-    .metric .mv { color:#1a5fa8 !important; }
-    select, input { background:#f5f5f5 !important; border:1px solid #ccc !important; color:#000 !important; }
-    .btn-export, .cover-upload-area input { display:none !important; }
-    .cover-upload-area { border:1px solid #ccc; }
-    #pdf-header { display:block !important; }
-    .range-wrap input[type=range] { display:none; }
+    @page { size: A4 portrait; margin: 14mm 14mm 14mm 14mm; }
+
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+    body { background:#fff !important; color:#1a1a18 !important; font-size:10pt; font-family:'Segoe UI',Arial,sans-serif; }
+
+    header, footer, #app > .card:last-child, .no-print,
+    .cover-upload-area, .cover-screen-preview,
+    .range-wrap input[type=range], .discount-row,
+    .note, #saving-wrap { display:none !important; }
+
+    main { max-width:100%; padding:0; margin:0; }
+
+    /* PDF page layout */
+    #pdf-page {
+      display:flex !important;
+      flex-direction:column;
+      width:100%;
+      height:100%;
+    }
+
+    /* Top header bar */
+    #pdf-topbar {
+      display:block !important;
+      background:#1a5fa8 !important;
+      color:#fff !important;
+      padding:10px 14px;
+      border-radius:6px;
+      margin-bottom:12px;
+    }
+    #pdf-topbar h1 { font-size:15pt; font-weight:700; margin-bottom:2px; color:#fff !important; }
+    #pdf-topbar .pdf-sub { font-size:8.5pt; opacity:.9; color:#fff !important; }
+
+    /* Two-column body */
+    #pdf-body {
+      display:flex !important;
+      gap:16px;
+      flex:1;
+      align-items:flex-start;
+    }
+
+    /* Left: cover image */
+    #pdf-left {
+      display:flex !important;
+      flex-direction:column;
+      flex:0 0 42%;
+      max-width:42%;
+    }
+    #pdf-left img {
+      width:100%;
+      max-height:200mm;
+      object-fit:contain;
+      border-radius:4px;
+      border:1px solid #e0e0e0;
+      display:block;
+    }
+    #pdf-no-cover {
+      display:none;
+    }
+
+    /* Right: data table */
+    #pdf-right {
+      display:flex !important;
+      flex-direction:column;
+      flex:1;
+      gap:12px;
+    }
+
+    .pdf-section-title {
+      font-size:7.5pt;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      color:#6b6a65;
+      margin-bottom:5px;
+      border-bottom:1px solid #e0e0e0;
+      padding-bottom:3px;
+    }
+
+    .pdf-table { width:100%; border-collapse:collapse; font-size:9.5pt; }
+    .pdf-table tr { border-bottom:1px solid #f0ede8; }
+    .pdf-table tr:last-child { border-bottom:none; }
+    .pdf-table td { padding:4px 6px; vertical-align:top; }
+    .pdf-table td:first-child { color:#6b6a65; width:48%; font-size:9pt; }
+    .pdf-table td:last-child { font-weight:600; color:#1a1a18; }
+
+    .pdf-result-big { background:#e6f1fb !important; border-radius:5px; padding:8px 10px; margin-bottom:6px; }
+    .pdf-result-big .label { font-size:8pt; color:#1a5fa8; margin-bottom:1px; }
+    .pdf-result-big .value { font-size:16pt; font-weight:700; color:#1a5fa8; }
+    .pdf-result-big .range { font-size:7.5pt; color:#6b6a65; }
+
+    .pdf-results-row { display:flex !important; gap:8px; }
+    .pdf-results-row .pdf-mini { flex:1; background:#f0ede8 !important; border-radius:5px; padding:6px 8px; }
+    .pdf-results-row .pdf-mini .label { font-size:7.5pt; color:#6b6a65; margin-bottom:1px; }
+    .pdf-results-row .pdf-mini .value { font-size:10.5pt; font-weight:700; color:#1a1a18; }
+
+    .pdf-saving { background:#e1f5ee !important; border-radius:5px; padding:6px 10px; font-size:9pt; color:#1a7a48; font-weight:600; }
+    .pdf-footer-note { font-size:7.5pt; color:#9a9890; margin-top:8px; line-height:1.5; border-top:1px solid #e0e0e0; padding-top:6px; }
+
+    /* Hide screen-only cards when printing */
+    #card-nazwa, #card-cover, #card-params, #card-naklad, #card-wyniki { display:none !important; }
   }
 
-  #pdf-header {
-    display:none;
-    background:#1a5fa8;
-    color:#fff;
-    padding:20px 24px;
-    border-radius:var(--radius-lg);
-    margin-bottom:16px;
-  }
-  #pdf-header h1 { font-size:18pt; margin-bottom:4px; }
-  #pdf-header .pdf-meta { font-size:10pt; opacity:.85; }
-  #pdf-cover-img { display:none; margin-bottom:16px; }
-  #pdf-cover-img img { max-height:220px; max-width:100%; border-radius:var(--radius); border:1px solid #ccc; object-fit:contain; }
+  /* PDF elements hidden on screen */
+  #pdf-page { display:none; }
+  #pdf-topbar { display:none; }
+  #pdf-body { display:none; }
+  #pdf-left { display:none; }
+  #pdf-right { display:none; }
 </style>
 </head>
 <body>
 
+<!-- =================== PDF LAYOUT (hidden on screen, shown on print) =================== -->
+<div id="pdf-page">
+  <div id="pdf-topbar">
+    <h1 id="pdf-title">Wycena druku</h1>
+    <div class="pdf-sub" id="pdf-sub"></div>
+  </div>
+  <div id="pdf-body">
+    <div id="pdf-left">
+      <img id="pdf-cover-img" src="" alt="Okładka materiału" style="display:none">
+      <div id="pdf-no-cover" style="width:100%;aspect-ratio:3/4;background:#f0ede8;border-radius:4px;display:flex;align-items:center;justify-content:center;">
+        <span style="color:#9a9890;font-size:9pt">Brak okładki</span>
+      </div>
+    </div>
+    <div id="pdf-right">
+      <div>
+        <div class="pdf-section-title">Parametry materiału</div>
+        <table class="pdf-table" id="pdf-params-table"></table>
+      </div>
+      <div>
+        <div class="pdf-section-title">Wycena</div>
+        <div class="pdf-result-big">
+          <div class="label">Cena po rabacie Schedpol (netto)</div>
+          <div class="value" id="pdf-disc">—</div>
+          <div class="range" id="pdf-disc-range"></div>
+        </div>
+        <div class="pdf-results-row">
+          <div class="pdf-mini"><div class="label">Cena rynkowa</div><div class="value" id="pdf-base">—</div></div>
+          <div class="pdf-mini"><div class="label">Koszt / 1 000 szt.</div><div class="value" id="pdf-1k">—</div></div>
+          <div class="pdf-mini"><div class="label">Koszt / sztukę</div><div class="value" id="pdf-unit">—</div></div>
+          <div class="pdf-mini"><div class="label">Czas realizacji</div><div class="value" id="pdf-time">—</div></div>
+        </div>
+        <div class="pdf-saving" id="pdf-saving" style="display:none;margin-top:8px"></div>
+      </div>
+      <div class="pdf-footer-note" id="pdf-footnote"></div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== APP (screen) =================== -->
 <header>
   <h1>Kalkulator kosztów druku <span>Schedpol</span></h1>
   <div id="status-badge">Ładowanie cen…</div>
 </header>
 
-<!-- PDF-only header (hidden in screen) -->
-<div id="pdf-header">
-  <h1 id="pdf-title">Wycena druku</h1>
-  <div class="pdf-meta" id="pdf-meta"></div>
-</div>
-<div id="pdf-cover-img"><img id="pdf-cover-src" src="" alt="Okładka materiału"></div>
-
 <main>
   <div id="loading" class="loading">Pobieranie aktualnych cen…</div>
   <div id="app" style="display:none">
 
-    <!-- Nazwa i data wyceny -->
-    <div class="card">
+    <div class="card" id="card-nazwa">
       <h2>Dane wyceny</h2>
       <div class="grid-2">
         <div class="field">
@@ -165,13 +262,12 @@
         </div>
         <div class="field">
           <label>Data wyceny</label>
-          <input type="text" id="data-wyceny" readonly style="background:var(--surface2);cursor:default">
+          <input type="text" id="data-wyceny" readonly style="cursor:default">
         </div>
       </div>
     </div>
 
-    <!-- Okładka -->
-    <div class="card">
+    <div class="card" id="card-cover">
       <h2>Okładka / wizualizacja materiału <span style="font-weight:400;text-transform:none;font-size:11px">(opcjonalnie)</span></h2>
       <div class="cover-upload-area" id="cover-area">
         <input type="file" id="cover-input" accept="image/*">
@@ -179,18 +275,16 @@
         <p>Kliknij lub przeciągnij obraz okładki</p>
         <p style="font-size:11px;margin-top:2px">JPG, PNG, WebP — maks. 5 MB</p>
       </div>
-      <div class="cover-preview" id="cover-preview">
-        <img id="cover-img" src="" alt="Podgląd okładki">
-        <br><button onclick="removeCover()">Usuń obraz</button>
+      <div class="cover-screen-preview" id="cover-preview">
+        <img id="cover-thumb" src="" alt="Podgląd okładki">
+        <button onclick="removeCover()">Usuń obraz</button>
       </div>
     </div>
 
-    <!-- Parametry materiału -->
-    <div class="card">
+    <div class="card" id="card-params">
       <h2>Parametry materiału</h2>
       <div class="grid-3" style="margin-bottom:12px">
-        <div class="field">
-          <label>Rodzaj materiału</label>
+        <div class="field"><label>Rodzaj materiału</label>
           <select id="type">
             <option value="ulotka">Ulotka</option>
             <option value="katalog">Katalog / broszura</option>
@@ -199,8 +293,7 @@
             <option value="teczka">Teczka firmowa</option>
           </select>
         </div>
-        <div class="field">
-          <label>Format</label>
+        <div class="field"><label>Format</label>
           <select id="format">
             <option value="a6">A6 (105×148 mm)</option>
             <option value="a5" selected>A5 (148×210 mm)</option>
@@ -209,8 +302,7 @@
             <option value="a3">A3 (297×420 mm)</option>
           </select>
         </div>
-        <div class="field">
-          <label>Kolor druku</label>
+        <div class="field"><label>Kolor druku</label>
           <select id="color">
             <option value="4_4">CMYK 4+4 (dwustronny)</option>
             <option value="4_0">CMYK 4+0 (jednostronny)</option>
@@ -219,8 +311,7 @@
         </div>
       </div>
       <div class="grid-3">
-        <div class="field">
-          <label>Gramatura</label>
+        <div class="field"><label>Gramatura</label>
           <select id="gram">
             <option value="90">90 g/m²</option>
             <option value="115">115 g/m²</option>
@@ -232,8 +323,7 @@
             <option value="300">300 g/m²</option>
           </select>
         </div>
-        <div class="field">
-          <label>Rodzaj papieru</label>
+        <div class="field"><label>Rodzaj papieru</label>
           <select id="paper">
             <option value="blyszcz" selected>Kreda błysk</option>
             <option value="mat">Kreda mat</option>
@@ -241,8 +331,7 @@
             <option value="karton">Karton</option>
           </select>
         </div>
-        <div class="field">
-          <label>Uszlachetnienie</label>
+        <div class="field"><label>Uszlachetnienie</label>
           <select id="finish">
             <option value="none" selected>Brak</option>
             <option value="folia_blyszcz">Folia błysk (1 str.)</option>
@@ -254,8 +343,7 @@
       </div>
     </div>
 
-    <!-- Nakład -->
-    <div class="card">
+    <div class="card" id="card-naklad">
       <h2>Nakład</h2>
       <div class="range-wrap">
         <input type="range" id="naklad" min="0" max="17" value="7" step="1">
@@ -269,53 +357,30 @@
       </div>
     </div>
 
-    <!-- Wyniki -->
-    <div class="card">
+    <div class="card" id="card-wyniki">
       <h2>Szacunek kosztów</h2>
       <div class="results-grid">
-        <div class="metric">
-          <div class="ml">Cena rynkowa (netto)</div>
-          <div class="mv" id="r-base">—</div>
-          <div class="ms" id="r-base-range"></div>
-        </div>
-        <div class="metric accent">
-          <div class="ml">Po rabacie (netto)</div>
-          <div class="mv" id="r-disc">—</div>
-          <div class="ms" id="r-disc-range"></div>
-        </div>
-        <div class="metric">
-          <div class="ml">Koszt / 1 000 szt.</div>
-          <div class="mv" id="r-1k">—</div>
-          <div class="ms">po rabacie, netto</div>
-        </div>
-        <div class="metric">
-          <div class="ml">Koszt / sztukę</div>
-          <div class="mv" id="r-unit">—</div>
-          <div class="ms">po rabacie, netto</div>
-        </div>
-        <div class="metric">
-          <div class="ml">Czas realizacji</div>
-          <div class="mv" id="r-time">—</div>
-          <div class="ms">dni robocze</div>
-        </div>
+        <div class="metric"><div class="ml">Cena rynkowa (netto)</div><div class="mv" id="r-base">—</div><div class="ms" id="r-base-range"></div></div>
+        <div class="metric accent"><div class="ml">Po rabacie (netto)</div><div class="mv" id="r-disc">—</div><div class="ms" id="r-disc-range"></div></div>
+        <div class="metric"><div class="ml">Koszt / 1 000 szt.</div><div class="mv" id="r-1k">—</div><div class="ms">po rabacie, netto</div></div>
+        <div class="metric"><div class="ml">Koszt / sztukę</div><div class="mv" id="r-unit">—</div><div class="ms">po rabacie, netto</div></div>
+        <div class="metric"><div class="ml">Czas realizacji</div><div class="mv" id="r-time">—</div><div class="ms">dni robocze</div></div>
       </div>
       <div id="saving-wrap"></div>
       <div class="note" id="r-note"></div>
     </div>
 
-    <!-- Export PDF -->
     <div class="card no-print">
       <h2>Eksport wyceny</h2>
       <button class="btn-export" onclick="exportPDF()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
         Pobierz wycenę jako PDF
       </button>
-      <p style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">PDF zostanie wygenerowany przez przeglądarkę (Drukuj → Zapisz jako PDF)</p>
+      <p style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">Drukuj → Zapisz jako PDF · układ A4, jedna strona</p>
     </div>
 
   </div>
 </main>
-
 <footer id="footer"></footer>
 
 <script>
@@ -323,20 +388,27 @@ const STEPS = [100,250,500,750,1000,1500,2000,2500,3000,4000,5000,7500,10000,150
 let P = null;
 let coverDataURL = null;
 
-// Ustaw dzisiejszą datę
-const today = new Date();
-const todayStr = today.toLocaleDateString('pl-PL', { day:'2-digit', month:'2-digit', year:'numeric' });
-document.getElementById('data-wyceny').value = todayStr;
+const LABELS = {
+  type:   { ulotka:'Ulotka', katalog:'Katalog / broszura', plakat:'Plakat', wizytowka:'Wizytówki', teczka:'Teczka firmowa' },
+  format: { a6:'A6 (105×148 mm)', a5:'A5 (148×210 mm)', dl:'DL (99×210 mm)', a4:'A4 (210×297 mm)', a3:'A3 (297×420 mm)' },
+  color:  { '4_4':'CMYK 4+4 (dwustronny)', '4_0':'CMYK 4+0 (jednostronny)', '1_1':'1+1 (czarno-biały)' },
+  paper:  { blyszcz:'Kreda błysk', mat:'Kreda mat', offset:'Offset (bezdrzewny)', karton:'Karton' },
+  finish: { none:'Brak', folia_blyszcz:'Folia błysk (1 str.)', folia_mat:'Folia mat (1 str.)', folia_soft:'Soft-touch (1 str.)', uv_wybiorczy:'UV wybiórczy' }
+};
 
-// Cover image handling
+// Set today
+const today = new Date();
+document.getElementById('data-wyceny').value = today.toLocaleDateString('pl-PL', { day:'2-digit', month:'2-digit', year:'numeric' });
+
+// Cover
 document.getElementById('cover-input').addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { alert('Plik jest za duży. Maksymalny rozmiar to 5 MB.'); return; }
+  if (file.size > 5*1024*1024) { alert('Plik za duży (maks. 5 MB)'); return; }
   const reader = new FileReader();
-  reader.onload = function(ev) {
+  reader.onload = ev => {
     coverDataURL = ev.target.result;
-    document.getElementById('cover-img').src = coverDataURL;
+    document.getElementById('cover-thumb').src = coverDataURL;
     document.getElementById('cover-preview').style.display = 'block';
     document.getElementById('cover-area').style.display = 'none';
   };
@@ -345,21 +417,20 @@ document.getElementById('cover-input').addEventListener('change', function(e) {
 
 function removeCover() {
   coverDataURL = null;
-  document.getElementById('cover-img').src = '';
+  document.getElementById('cover-thumb').src = '';
   document.getElementById('cover-preview').style.display = 'none';
   document.getElementById('cover-area').style.display = 'block';
   document.getElementById('cover-input').value = '';
 }
 
-// Drag & drop
 const area = document.getElementById('cover-area');
-area.addEventListener('dragover', e => { e.preventDefault(); area.style.borderColor = 'var(--accent)'; });
-area.addEventListener('dragleave', () => { area.style.borderColor = ''; });
+area.addEventListener('dragover', e => { e.preventDefault(); area.style.borderColor='var(--accent)'; });
+area.addEventListener('dragleave', () => { area.style.borderColor=''; });
 area.addEventListener('drop', e => {
-  e.preventDefault(); area.style.borderColor = '';
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) {
-    const dt = new DataTransfer(); dt.items.add(file);
+  e.preventDefault(); area.style.borderColor='';
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) {
+    const dt = new DataTransfer(); dt.items.add(f);
     document.getElementById('cover-input').files = dt.files;
     document.getElementById('cover-input').dispatchEvent(new Event('change'));
   }
@@ -392,25 +463,9 @@ function getScaleMult(n) {
   return 0.60;
 }
 
-function fmt(v) {
-  return v.toLocaleString('pl-PL', { minimumFractionDigits:0, maximumFractionDigits:0 }) + ' zł';
-}
+function fmt(v) { return v.toLocaleString('pl-PL',{minimumFractionDigits:0,maximumFractionDigits:0}) + ' zł'; }
 
-function getLabels() {
-  const typeLabels = { ulotka:'Ulotka', katalog:'Katalog / broszura', plakat:'Plakat', wizytowka:'Wizytówki', teczka:'Teczka firmowa' };
-  const formatLabels = { a6:'A6 (105×148 mm)', a5:'A5 (148×210 mm)', dl:'DL (99×210 mm)', a4:'A4 (210×297 mm)', a3:'A3 (297×420 mm)' };
-  const colorLabels = { '4_4':'CMYK 4+4 (dwustronny)', '4_0':'CMYK 4+0 (jednostronny)', '1_1':'1+1 (czarno-biały)' };
-  const paperLabels = { blyszcz:'Kreda błysk', mat:'Kreda mat', offset:'Offset', karton:'Karton' };
-  const finishLabels = { none:'Brak', folia_blyszcz:'Folia błysk', folia_mat:'Folia mat', folia_soft:'Soft-touch', uv_wybiorczy:'UV wybiórczy' };
-  return {
-    type: typeLabels[document.getElementById('type').value] || '',
-    format: formatLabels[document.getElementById('format').value] || '',
-    color: colorLabels[document.getElementById('color').value] || '',
-    gram: document.getElementById('gram').value + ' g/m²',
-    paper: paperLabels[document.getElementById('paper').value] || '',
-    finish: finishLabels[document.getElementById('finish').value] || '',
-  };
-}
+let lastCalc = {};
 
 function calc() {
   if (!P) return;
@@ -422,22 +477,22 @@ function calc() {
   const finish = document.getElementById('finish').value;
   const idx    = parseInt(document.getElementById('naklad').value);
   const n      = STEPS[idx];
-  const rabat  = Math.min(Math.max(parseFloat(document.getElementById('rabat').value) || 0, 0), 99);
+  const rabat  = Math.min(Math.max(parseFloat(document.getElementById('rabat').value)||0,0),99);
 
   document.getElementById('naklad-out').textContent = n.toLocaleString('pl-PL') + ' szt.';
 
-  const base_u  = P.base[type][format];
-  const cm = P.multipliers.color[color] || 1;
-  const gm = P.multipliers.gram[gram] || 1;
-  const pm = P.multipliers.paper[paper] || 1;
-  const fa = P.multipliers.finish[finish] || 0;
+  const base_u = P.base[type][format];
+  const cm = P.multipliers.color[color]||1;
+  const gm = P.multipliers.gram[gram]||1;
+  const pm = P.multipliers.paper[paper]||1;
+  const fa = P.multipliers.finish[finish]||0;
   const sm = getScaleMult(n);
-  const setup = P.setup[type] || 100;
+  const setup = P.setup[type]||100;
 
-  const uprice = base_u * cm * gm * pm * sm + fa;
+  const uprice   = base_u * cm * gm * pm * sm + fa;
   const baseTotal = uprice * n + setup;
-  const discTotal = baseTotal * (1 - rabat / 100);
-  const saving = baseTotal - discTotal;
+  const discTotal = baseTotal * (1 - rabat/100);
+  const saving    = baseTotal - discTotal;
 
   const blow  = Math.round(baseTotal * 0.88);
   const bhigh = Math.round(baseTotal * 1.18);
@@ -447,71 +502,90 @@ function calc() {
   let days = '3–5';
   if (n > 20000) days = '5–8';
   if (n > 50000) days = '7–12';
-  if (finish !== 'none') days = (days === '3–5') ? '4–7' : '6–10';
+  if (finish !== 'none') days = days === '3–5' ? '4–7' : '6–10';
 
   document.getElementById('r-base').textContent       = fmt(Math.round(baseTotal));
   document.getElementById('r-base-range').textContent = fmt(blow) + ' – ' + fmt(bhigh);
   document.getElementById('r-disc').textContent       = fmt(Math.round(discTotal));
   document.getElementById('r-disc-range').textContent = fmt(dlow) + ' – ' + fmt(dhigh);
-  document.getElementById('r-1k').textContent         = fmt(Math.round(discTotal / n * 1000));
-  document.getElementById('r-unit').textContent       = (discTotal / n).toFixed(3).replace('.',',') + ' zł';
+  document.getElementById('r-1k').textContent         = fmt(Math.round(discTotal/n*1000));
+  document.getElementById('r-unit').textContent       = (discTotal/n).toFixed(3).replace('.',',') + ' zł';
   document.getElementById('r-time').textContent       = days;
 
   const sw = document.getElementById('saving-wrap');
-  if (rabat > 0) {
-    sw.innerHTML = '<div class="saving-badge">✓ Oszczędność z rabatu ' + rabat + '%: ' + fmt(Math.round(saving)) + '</div>';
-  } else {
-    sw.innerHTML = '';
-  }
+  sw.innerHTML = rabat > 0
+    ? '<div class="saving-badge">✓ Oszczędność z rabatu ' + rabat + '%: ' + fmt(Math.round(saving)) + '</div>'
+    : '';
 
   let note = '⚠ Szacunki orientacyjne. Setup (~' + setup + ' zł netto) wliczony. Ceny bez VAT i dostawy. ';
   if (n < 500) note += 'Niski nakład — rozważ druk cyfrowy. ';
   if (finish === 'uv_wybiorczy') note += 'UV wybiórczy: możliwy koszt matrycy 50–150 zł. ';
   document.getElementById('r-note').textContent = note;
+
+  lastCalc = { type, format, color, gram, paper, finish, n, rabat, setup,
+    baseTotal, discTotal, saving, blow, bhigh, dlow, dhigh, days, note };
 }
 
 function exportPDF() {
+  const c = lastCalc;
   const nazwa = document.getElementById('nazwa').value.trim() || 'Wycena druku';
   const dataW = document.getElementById('data-wyceny').value;
-  const labels = getLabels();
-  const idx = parseInt(document.getElementById('naklad').value);
-  const n = STEPS[idx];
-  const rabat = document.getElementById('rabat').value;
 
-  // Populate PDF header
+  // --- Populate PDF elements ---
   document.getElementById('pdf-title').textContent = nazwa;
-  document.getElementById('pdf-meta').textContent =
-    'Data wyceny: ' + dataW +
-    '  |  ' + labels.type + ', ' + labels.format + ', ' + labels.color +
-    '  |  ' + labels.gram + ', ' + labels.paper +
-    (labels.finish !== 'Brak' ? '  |  Uszlachetnienie: ' + labels.finish : '') +
-    '  |  Nakład: ' + n.toLocaleString('pl-PL') + ' szt.' +
-    '  |  Rabat: ' + rabat + '%';
+  document.getElementById('pdf-sub').textContent =
+    'Data wyceny: ' + dataW + '  |  Schedpol — kalkulator kosztów druku';
 
-  // Show/hide cover
-  const pdfCoverDiv = document.getElementById('pdf-cover-img');
+  // Cover
+  const imgEl = document.getElementById('pdf-cover-img');
+  const noCover = document.getElementById('pdf-no-cover');
   if (coverDataURL) {
-    document.getElementById('pdf-cover-src').src = coverDataURL;
-    pdfCoverDiv.style.display = 'block';
+    imgEl.src = coverDataURL;
+    imgEl.style.display = 'block';
+    noCover.style.display = 'none';
   } else {
-    pdfCoverDiv.style.display = 'none';
+    imgEl.style.display = 'none';
+    noCover.style.display = 'flex';
   }
 
-  // Show PDF header
-  document.getElementById('pdf-header').style.display = 'block';
+  // Params table
+  const rows = [
+    ['Rodzaj materiału', LABELS.type[c.type]],
+    ['Format',           LABELS.format[c.format]],
+    ['Kolor druku',      LABELS.color[c.color]],
+    ['Gramatura',        c.gram + ' g/m²'],
+    ['Rodzaj papieru',   LABELS.paper[c.paper]],
+    ['Uszlachetnienie',  LABELS.finish[c.finish]],
+    ['Nakład',           c.n.toLocaleString('pl-PL') + ' szt.'],
+    ['Rabat Schedpol',   c.rabat + '%'],
+    ['Data wyceny',      dataW],
+  ];
+  document.getElementById('pdf-params-table').innerHTML =
+    rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
 
-  // Set page title for PDF filename
+  // Results
+  document.getElementById('pdf-disc').textContent       = fmt(Math.round(c.discTotal));
+  document.getElementById('pdf-disc-range').textContent = 'widełki: ' + fmt(c.dlow) + ' – ' + fmt(c.dhigh);
+  document.getElementById('pdf-base').textContent       = fmt(Math.round(c.baseTotal));
+  document.getElementById('pdf-1k').textContent         = fmt(Math.round(c.discTotal/c.n*1000));
+  document.getElementById('pdf-unit').textContent       = (c.discTotal/c.n).toFixed(3).replace('.',',') + ' zł';
+  document.getElementById('pdf-time').textContent       = c.days + ' dni rob.';
+
+  const savEl = document.getElementById('pdf-saving');
+  if (c.rabat > 0) {
+    savEl.textContent = '✓ Oszczędność z rabatu ' + c.rabat + '%: ' + fmt(Math.round(c.saving));
+    savEl.style.display = 'block';
+  } else {
+    savEl.style.display = 'none';
+  }
+
+  document.getElementById('pdf-footnote').textContent = c.note + 'Wycena wygenerowana przez kalkulator Schedpol.';
+
+  // Print
   const origTitle = document.title;
   document.title = nazwa + ' — ' + dataW;
-
   window.print();
-
-  // Restore
-  setTimeout(() => {
-    document.getElementById('pdf-header').style.display = 'none';
-    pdfCoverDiv.style.display = 'none';
-    document.title = origTitle;
-  }, 1000);
+  document.title = origTitle;
 }
 
 document.querySelectorAll('select, input').forEach(el => el.addEventListener('input', calc));
