@@ -445,10 +445,25 @@ const OPRAWA_NOTES = {
   drut:    'Drut spiralny — do 200 stron. Trwalsza wersja spirali, profesjonalny wygląd.'
 };
 
-// Mnożniki dodatkowe dla katalogu
-const KATALOG_STRONY_MULT = { 8:1.0, 12:1.18, 16:1.35, 20:1.52, 24:1.68, 32:2.0, 48:2.7, 64:3.4, 96:4.8, 128:6.2 };
-const KATALOG_OPRAWA_ADD  = { zszywki:0.08, klej:0.22, spiral:0.28, drut:0.32 };
-const KATALOG_OKLADKA_MULT = { 200:1.0, 250:1.06, 300:1.12, 350:1.18 };
+// Mnożniki dla katalogu — oparte na realnych stawkach rynkowych (Drukomat, Sprint24, Q1 2025)
+// Baza (prices.json katalog A5) = cena dla ~16 stron. Mnożnik = przelicznik na faktyczną liczbę stron.
+// Wzrost jest podliniowy bo setup i oprawa to koszty stałe, papier rośnie liniowo.
+const KATALOG_STRONY_MULT = {
+  8:  0.65,   // mniej papieru niż baza
+  12: 0.82,
+  16: 1.00,   // punkt referencyjny
+  20: 1.22,
+  24: 1.42,
+  32: 1.80,
+  48: 2.50,
+  64: 3.20,
+  96: 4.60,
+  128: 5.90
+};
+// Koszt oprawy dodawany do ceny jednostkowej (zł/szt.) — realne stawki rynkowe
+const KATALOG_OPRAWA_ADD  = { zszywki:0.08, klej:0.38, spiral:0.48, drut:0.56 };
+// Okładka grubsza = minimalny wzrost kosztu (papier to mały % całości katalogu)
+const KATALOG_OKLADKA_MULT = { 200:1.00, 250:1.04, 300:1.07, 350:1.10 };
 
 // Set today
 document.getElementById('data-wyceny').value = new Date().toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric'});
