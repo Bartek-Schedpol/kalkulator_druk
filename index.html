@@ -127,7 +127,9 @@
       display:block !important;
     }
     #pdf-left img { width:100%; max-height:198mm; object-fit:contain; border-radius:4px; border:1px solid #e0e0e0; display:block; }
-    #pdf-no-cover { width:100%; aspect-ratio:3/4; background:#f0ede8 !important; border-radius:4px; display:flex !important; align-items:center; justify-content:center; border:1px solid #e0e0e0; }
+    #pdf-no-cover { width:100%; aspect-ratio:3/4; background:#f0ede8 !important; border-radius:4px; display:flex; align-items:center; justify-content:center; border:1px solid #e0e0e0; }
+    #pdf-no-cover.hidden { display:none !important; }
+    #pdf-cover-img.hidden { display:none !important; }
     #pdf-no-cover span { color:#9a9890; font-size:9pt; }
 
     #pdf-right {
@@ -172,7 +174,7 @@
   </div>
   <div id="pdf-body">
     <div id="pdf-left">
-      <img id="pdf-cover-img" src="" alt="Okładka">
+      <img id="pdf-cover-img" src="" alt="Okładka" class="hidden">
       <div id="pdf-no-cover"><span>Brak okładki</span></div>
     </div>
     <div id="pdf-right">
@@ -656,11 +658,12 @@ function exportPDF() {
   const noCover = document.getElementById('pdf-no-cover');
   if (coverDataURL) {
     imgEl.src = coverDataURL;
-    imgEl.style.display = 'block';
-    noCover.style.display = 'none';
+    imgEl.classList.remove('hidden');
+    noCover.classList.add('hidden');
   } else {
-    imgEl.style.display = 'none';
-    noCover.style.display = 'flex';
+    imgEl.src = '';
+    imgEl.classList.add('hidden');
+    noCover.classList.remove('hidden');
   }
 
   const rows = [
